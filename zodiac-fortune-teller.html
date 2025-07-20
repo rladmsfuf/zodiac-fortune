@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 띠별운세</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .search-btn:hover {
+            background: #764ba2;
+        }
+        
+        .result {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .zodiac-icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .zodiac-name {
+            text-align: center;
+            font-size: 24px;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .fortune-content {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            line-height: 1.8;
+        }
+        
+        .fortune-section {
+            margin-bottom: 20px;
+        }
+        
+        .fortune-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .positive {
+            color: #27ae60;
+        }
+        
+        .caution {
+            color: #e74c3c;
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .hint {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 오늘의 띠별운세</h1>
+        
+        <div class="search-box">
+            <input type="text" id="zodiacInput" placeholder="띠를 입력하세요 (예: 쥐띠, 소띠...)" onkeypress="if(event.keyCode==13) searchZodiac()">
+            <button class="search-btn" onclick="searchZodiac()">검색</button>
+        </div>
+        
+        <div class="hint">쥐띠, 소띠, 호랑이띠, 토끼띠, 용띠, 뱀띠, 말띠, 양띠, 원숭이띠, 닭띠, 개띠, 돼지띠</div>
+        
+        <div class="error" id="errorMsg">
+            올바른 띠를 입력해주세요!
+        </div>
+        
+        <div class="result" id="result">
+            <div class="zodiac-icon" id="zodiacIcon"></div>
+            <div class="zodiac-name" id="zodiacName"></div>
+            <div class="fortune-content">
+                <div class="fortune-section">
+                    <h3 class="positive">💫 오늘의 긍정적인 기운</h3>
+                    <p id="positiveFortune"></p>
+                </div>
+                <div class="fortune-section">
+                    <h3 class="caution">⚠️ 주의하면 좋을 점</h3>
+                    <p id="cautionFortune"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const fortunes = {
+            '쥐띠': {
+                icon: '🐭',
+                positive: '오늘은 창의적인 아이디어가 샘솟는 날이에요. 평소 미뤄왔던 프로젝트나 새로운 시도를 하기에 아주 좋은 타이밍이죠. 대인관계에서도 좋은 소식이 들려올 가능성이 높으니 연락을 기다려보세요.',
+                caution: '너무 많은 일을 한꺼번에 벌이려고 하면 오히려 역효과가 날 수 있어요. 우선순위를 정해서 차근차근 진행하는 게 좋겠네요. 저녁 시간대에는 충동적인 결정을 피하는 게 좋아요.'
+            },
+            '소띠': {
+                icon: '🐮',
+                positive: '꾸준한 노력이 결실을 맺는 날이에요. 그동안 성실하게 준비해온 일들이 좋은 결과로 이어질 거예요. 재물운도 상승세니 투자나 저축 계획을 세워보는 것도 좋겠어요.',
+                caution: '고집을 너무 부리면 주변 사람들과 마찰이 생길 수 있어요. 상대방의 의견도 귀담아듣는 유연함이 필요해요. 건강 관리에도 신경 써야 하는 시기예요.'
+            },
+            '호랑이띠': {
+                icon: '🐯',
+                positive: '리더십이 빛나는 하루가 될 거예요. 주변 사람들이 당신의 조언을 구하거나 도움을 요청할 가능성이 높아요. 자신감 있게 행동하면 좋은 기회를 잡을 수 있을 거예요.',
+                caution: '너무 앞서나가려고 하면 실수할 수 있어요. 신중함도 때로는 필요하답니다. 말조심도 필요한 날이니 감정적인 표현은 자제하는 게 좋겠어요.'
+            },
+            '토끼띠': {
+                icon: '🐰',
+                positive: '인간관계에서 행운이 따르는 날이에요. 새로운 인연을 만나거나 기존 관계가 더욱 돈독해질 수 있어요. 예술적 감각도 높아져서 창작 활동에 몰두하면 좋은 성과가 있을 거예요.',
+                caution: '우유부단한 태도는 기회를 놓치게 만들 수 있어요. 결정이 필요한 순간에는 과감하게 선택하세요. 소비 욕구가 커질 수 있으니 지갑 관리도 필요해요.'
+            },
+            '용띠': {
+                icon: '🐲',
+                positive: '큰 성취를 이룰 수 있는 강력한 에너지가 넘치는 날이에요. 도전적인 과제도 거뜬히 해낼 수 있을 거예요. 주변의 인정과 칭찬이 쏟아질 가능성이 높아요.',
+                caution: '자만심은 실패의 지름길이에요. 겸손한 자세를 유지하면서 꾸준히 노력하는 게 중요해요. 과로에 주의하고 충분한 휴식을 취하세요.'
+            },
+            '뱀띠': {
+                icon: '🐍',
+                positive: '직관력이 뛰어난 날이에요. 복잡한 문제도 쉽게 해결책을 찾을 수 있을 거예요. 숨겨진 기회를 발견하거나 좋은 정보를 얻을 가능성이 높아요.',
+                caution: '의심이 많아지면 좋은 기회도 놓칠 수 있어요. 때로는 직감을 믿고 행동하는 것도 필요해요. 비밀스러운 일은 조심스럽게 다루세요.'
+            },
+            '말띠': {
+                icon: '🐴',
+                positive: '활동적이고 역동적인 에너지가 넘치는 날이에요. 야외 활동이나 운동을 하면 더욱 좋은 기운을 받을 수 있어요. 새로운 도전도 성공할 가능성이 높아요.',
+                caution: '성급한 행동은 실수를 부를 수 있어요. 중요한 결정은 충분히 생각한 후에 내리세요. 체력 관리도 중요하니 무리하지 마세요.'
+            },
+            '양띠': {
+                icon: '🐑',
+                positive: '예술적 감성이 풍부해지는 날이에요. 창의적인 작업이나 취미 활동에서 큰 만족감을 얻을 수 있어요. 가족이나 친한 사람들과의 시간도 행복할 거예요.',
+                caution: '너무 감성적으로만 판단하면 현실적인 문제를 놓칠 수 있어요. 이성과 감성의 균형을 맞추는 게 중요해요. 약속 시간은 꼭 지키세요.'
+            },
+            '원숭이띠': {
+                icon: '🐵',
+                positive: '재치와 유머가 빛나는 날이에요. 사교 모임이나 회의에서 주목받을 가능성이 높아요. 새로운 아이디어로 문제를 해결하는 능력이 뛰어날 거예요.',
+                caution: '장난이 지나치면 신뢰를 잃을 수 있어요. 진지해야 할 때는 진지한 태도를 보이세요. 산만함도 주의해야 할 부분이에요.'
+            },
+            '닭띠': {
+                icon: '🐓',
+                positive: '계획적이고 체계적인 일 처리로 좋은 성과를 낼 수 있는 날이에요. 꼼꼼함이 빛을 발해 실수 없이 일을 마무리할 수 있을 거예요. 금전운도 좋은 편이에요.',
+                caution: '너무 완벽주의적인 태도는 스트레스를 유발할 수 있어요. 때로는 여유를 갖는 것도 필요해요. 타인에 대한 비판은 자제하세요.'
+            },
+            '개띠': {
+                icon: '🐕',
+                positive: '정직하고 성실한 태도가 좋은 평가를 받는 날이에요. 신뢰를 바탕으로 한 관계가 더욱 깊어질 거예요. 봉사나 도움을 주는 일에서 큰 보람을 느낄 수 있어요.',
+                caution: '지나친 걱정은 오히려 독이 될 수 있어요. 긍정적인 마음가짐을 유지하세요. 자신의 의견을 고집하기보다는 융통성을 발휘하세요.'
+            },
+            '돼지띠': {
+                icon: '🐷',
+                positive: '풍요롭고 행복한 기운이 가득한 날이에요. 맛있는 음식이나 즐거운 만남이 기다리고 있을 거예요. 재물운도 좋아서 예상치 못한 수입이 생길 수도 있어요.',
+                caution: '과식이나 과소비에 주의해야 해요. 즐기는 것도 좋지만 적당함을 유지하는 게 중요해요. 게으름도 경계해야 할 부분이에요.'
+            }
+        };
+        
+        function searchZodiac() {
+            const input = document.getElementById('zodiacInput').value.trim();
+            const result = document.getElementById('result');
+            const error = document.getElementById('errorMsg');
+            
+            // 에러 메시지 숨기기
+            error.style.display = 'none';
+            result.style.display = 'none';
+            
+            if (!input) {
+                error.textContent = '띠를 입력해주세요!';
+                error.style.display = 'block';
+                return;
+            }
+            
+            // 띠 찾기
+            let zodiacKey = null;
+            for (let key in fortunes) {
+                if (key === input || key.replace('띠', '') === input.replace('띠', '')) {
+                    zodiacKey = key;
+                    break;
+                }
+            }
+            
+            if (!zodiacKey) {
+                error.textContent = '올바른 띠를 입력해주세요! (예: 쥐띠, 소띠 등)';
+                error.style.display = 'block';
+                return;
+            }
+            
+            // 결과 표시
+            const fortune = fortunes[zodiacKey];
+            document.getElementById('zodiacIcon').textContent = fortune.icon;
+            document.getElementById('zodiacName').textContent = zodiacKey + ' 운세';
+            document.getElementById('positiveFortune').textContent = fortune.positive;
+            document.getElementById('cautionFortune').textContent = fortune.caution;
+            
+            result.style.display = 'block';
+        }
+        
+        // 엔터키 이벤트는 이미 HTML에서 처리
+    </script>
+</body>
+</html>
